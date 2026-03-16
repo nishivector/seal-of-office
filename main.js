@@ -528,7 +528,7 @@ function resetGame() {
 }
 
 function showInstructions() {
-  document.getElementById('start-screen').style.display = 'none';
+  document.getElementById('startScreen').style.display = 'none';
   const is = document.getElementById('instructions-screen');
   is.classList.add('visible');
   gameState = 'instructions';
@@ -675,12 +675,6 @@ canvas.addEventListener('pointermove', (e) => {
 
 canvas.addEventListener('pointerdown', (e) => {
   e.preventDefault();
-  if (gameState === 'start') {
-    showInstructions();
-    initAudio();
-    return;
-  }
-  if (gameState === 'instructions') return;
   if (gameState !== 'playing') return;
 
   const { wx, wy, sx, sy } = pointerToWorld(e.clientX, e.clientY);
@@ -840,9 +834,14 @@ function animateStamp() {
   requestAnimationFrame(anim);
 }
 
-// Document-level / gameover event handlers
+// Document-level pointer handler (capture phase, handles all states)
 document.addEventListener('pointerdown', (e) => {
-  if (gameState === 'gameover') {
+  if (gameState === 'start') {
+    showInstructions();
+    initAudio();
+  } else if (gameState === 'instructions') {
+    startGame();
+  } else if (gameState === 'gameover') {
     document.getElementById('gameover-screen').classList.remove('visible');
     document.getElementById('hud').classList.add('visible');
     stampGroup.visible = true;
