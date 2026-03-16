@@ -425,13 +425,18 @@ function spawnDocument(x, y, speed, isForgery, fromTop) {
   const mesh = createDocMesh(isForgery);
   mesh.position.set(x, y, 3 + documents.length * 0.1);
 
-  // Drift direction
-  const angle = fromTop
-    ? (Math.PI * 1.1 + Math.random() * 0.2) // downward-left
-    : (Math.PI + Math.random() * 0.3 - 0.15); // leftward
-
-  const vx = Math.cos(angle) * speed;
-  const vy = Math.sin(angle) * speed;
+  // Drift direction (in world coords: +x right, +y up)
+  // Documents drift left and slightly down (negative y in world = down on screen)
+  let vx, vy;
+  if (fromTop) {
+    // From top: drift downward-left
+    vx = -speed * 0.5;
+    vy = -speed * 0.85;
+  } else {
+    // From right: drift leftward + slight downward
+    vx = -speed;
+    vy = -speed * (0.05 + Math.random() * 0.1);
+  }
 
   scene.add(mesh);
   playSlideIn();
@@ -881,11 +886,11 @@ function trySpawnDoc(now) {
     // L5: enter from top
     fromTop = true;
     sx = -W * 0.3 + Math.random() * W * 0.6;
-    sy = H / 2 + DOC_H;
+    sy = H / 2 + DOC_H / 2 + 10;
   } else {
-    // Enter from right side
-    sx = W / 2 + DOC_W;
-    sy = -H * 0.3 + Math.random() * H * 0.6;
+    // Enter from right side — just barely off screen
+    sx = W / 2 + DOC_W / 2 + 10;
+    sy = -H * 0.25 + Math.random() * H * 0.5;
   }
 
   spawnDocument(sx, sy, speed, isForgery, fromTop);
@@ -1017,11 +1022,11 @@ function updateGameScene(now, dt) {
       doc.mesh.position.set(doc.x, doc.y, doc.mesh.position.z);
     }
 
-    // Check if near edge (crumble zone)
-    const edgeX = doc.x < -W / 2 - 30;
-    const edgeY = doc.y < -H / 2 - 30;
-    const edgeXR = doc.x > W / 2 + 30;
-    const edgeYT = doc.y > H / 2 + 30;
+    // Check if off screen (crumble zone) - docs drift left+down so check left and bottom edges
+    const edgeX = doc.x < -W / 2 - DOC_W;
+    const edgeY = doc.y < -H / 2 - DOC_H;
+    const edgeXR = doc.x > W / 2 + DOC_W;
+    const edgeYT = doc.y > H / 2 + DOC_H;
 
     if (edgeX || edgeY || edgeXR || edgeYT) {
       doc.alive = false;
@@ -1060,8 +1065,8 @@ function updateGameScene(now, dt) {
       continue;
     }
 
-    // Check proximity to edge for danger state
-    if (doc.x < -W * 0.35 || doc.y < -H * 0.35) docsNearEdge++;
+    // Check proximity to edge for danger state (near left or bottom)
+    if (doc.x < -W * 0.3 || doc.y < -H * 0.3) docsNearEdge++;
   }
 
   // Update danger state
