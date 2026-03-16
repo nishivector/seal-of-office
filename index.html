@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Seal of Office</title>
+  <!-- Tone.js FIRST, before importmap -->
+  <script src="https://cdn.jsdelivr.net/npm/tone@15.1.22/build/Tone.js"></script>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.183.0/examples/jsm/"
+    }
+  }
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      overflow: hidden;
+      background: #C8A96E;
+      font-family: 'Georgia', serif;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    canvas#c {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      touch-action: none;
+      display: block;
+    }
+    #overlay2d {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      touch-action: none;
+    }
+    #ui {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      touch-action: none;
+    }
+    #start-screen {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: all;
+      cursor: pointer;
+      touch-action: none;
+      z-index: 10;
+    }
+    #start-screen svg {
+      width: min(90vw, 600px);
+      height: auto;
+    }
+    #start-tagline {
+      color: #1A3A5C;
+      font-size: clamp(13px, 2vw, 18px);
+      text-align: center;
+      max-width: min(80vw, 500px);
+      margin-top: 16px;
+      opacity: 0.8;
+      font-style: italic;
+      letter-spacing: 0.05em;
+    }
+    #start-tap {
+      color: #1A3A5C;
+      font-size: clamp(14px, 2.5vw, 20px);
+      margin-top: 32px;
+      letter-spacing: 0.2em;
+      animation: blink 1.5s ease-in-out infinite;
+      text-transform: uppercase;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    #instructions-screen {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: all;
+      cursor: pointer;
+      touch-action: none;
+      z-index: 10;
+      background: rgba(26, 58, 92, 0.85);
+    }
+    #instructions-screen.visible {
+      display: flex;
+    }
+    #instructions-inner {
+      background: #F2E8D5;
+      border: 2px solid #1A3A5C;
+      padding: clamp(20px, 4vw, 40px);
+      max-width: min(90vw, 520px);
+      text-align: center;
+    }
+    #instructions-inner h2 {
+      color: #1A3A5C;
+      font-size: clamp(16px, 3vw, 24px);
+      letter-spacing: 0.15em;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+    }
+    #instructions-inner p {
+      color: #1A3A5C;
+      font-size: clamp(13px, 2vw, 16px);
+      margin-bottom: 10px;
+      letter-spacing: 0.04em;
+    }
+    #instructions-inner .warn {
+      color: #8B1A1A;
+      font-weight: bold;
+      font-size: clamp(13px, 2vw, 16px);
+      margin-top: 12px;
+    }
+    #instructions-tap {
+      color: #1A3A5C;
+      font-size: clamp(14px, 2.5vw, 18px);
+      margin-top: 20px;
+      letter-spacing: 0.2em;
+      animation: blink 1.5s ease-in-out infinite;
+      text-transform: uppercase;
+    }
+    #hud {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      display: none;
+      padding: clamp(8px, 1.5vw, 16px) clamp(12px, 2vw, 24px);
+      pointer-events: none;
+      z-index: 5;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+    #hud.visible { display: flex; }
+    #hud-score {
+      color: #1A3A5C;
+      font-size: clamp(16px, 3vw, 24px);
+      font-weight: bold;
+      letter-spacing: 0.1em;
+      text-shadow: 0 1px 3px rgba(255,255,255,0.5);
+    }
+    #hud-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+    #hud-level {
+      color: #1A3A5C;
+      font-size: clamp(13px, 2vw, 18px);
+      letter-spacing: 0.1em;
+    }
+    #hud-lives {
+      color: #C8102E;
+      font-size: clamp(16px, 2.5vw, 22px);
+      letter-spacing: 0.1em;
+    }
+    #hud-combo {
+      color: #D64E2A;
+      font-size: clamp(14px, 2.5vw, 20px);
+      font-weight: bold;
+      text-align: center;
+      width: 100%;
+      position: absolute;
+      top: 50px;
+      left: 0;
+      pointer-events: none;
+    }
+    #gameover-screen {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(26, 58, 92, 0.9);
+      z-index: 20;
+      touch-action: none;
+    }
+    #gameover-screen.visible { display: flex; }
+    #gameover-inner {
+      background: #F2E8D5;
+      border: 3px solid #8B1A1A;
+      padding: clamp(20px, 4vw, 48px);
+      text-align: center;
+      max-width: min(90vw, 500px);
+    }
+    #gameover-inner h2 {
+      color: #8B1A1A;
+      font-size: clamp(20px, 4vw, 36px);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    #gameover-inner .score-display {
+      color: #1A3A5C;
+      font-size: clamp(16px, 3vw, 28px);
+      margin-bottom: 8px;
+    }
+    #gameover-inner .high-score {
+      color: #D64E2A;
+      font-size: clamp(14px, 2.5vw, 20px);
+      margin-bottom: 20px;
+    }
+    #gameover-tap {
+      color: #1A3A5C;
+      font-size: clamp(14px, 2vw, 18px);
+      letter-spacing: 0.2em;
+      animation: blink 1.5s ease-in-out infinite;
+      text-transform: uppercase;
+      margin-top: 16px;
+    }
+    #levelcomplete-screen {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(26, 58, 92, 0.8);
+      z-index: 20;
+      touch-action: none;
+    }
+    #levelcomplete-screen.visible { display: flex; }
+    #levelcomplete-inner {
+      background: #F2E8D5;
+      border: 3px solid #1A3A5C;
+      padding: clamp(20px, 4vw, 48px);
+      text-align: center;
+      max-width: min(90vw, 500px);
+    }
+    #levelcomplete-inner h2 {
+      color: #1A3A5C;
+      font-size: clamp(20px, 4vw, 36px);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    #levelcomplete-inner .lc-score {
+      color: #1A3A5C;
+      font-size: clamp(16px, 2.5vw, 24px);
+      margin-bottom: 8px;
+    }
+    #levelcomplete-tap {
+      color: #1A3A5C;
+      font-size: clamp(14px, 2vw, 18px);
+      letter-spacing: 0.2em;
+      animation: blink 1.5s ease-in-out infinite;
+      text-transform: uppercase;
+      margin-top: 16px;
+    }
+    #traitor-banner {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #8B1A1A;
+      color: #F2E8D5;
+      font-size: clamp(20px, 5vw, 48px);
+      letter-spacing: 0.3em;
+      padding: 16px 32px;
+      text-transform: uppercase;
+      pointer-events: none;
+      z-index: 30;
+      display: none;
+      font-family: Georgia, serif;
+    }
+    #github-link {
+      position: fixed;
+      bottom: 12px;
+      right: 16px;
+      color: #1A3A5C;
+      font-size: clamp(13px, 1.8vw, 16px);
+      text-decoration: none;
+      opacity: 0.6;
+      z-index: 5;
+      pointer-events: all;
+    }
+    #github-link:hover { opacity: 1; }
+    #vignette {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 4;
+      background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.35) 100%);
+    }
+    #float-score {
+      position: fixed;
+      pointer-events: none;
+      z-index: 25;
+      font-family: Georgia, serif;
+      font-weight: bold;
+      font-size: clamp(16px, 2.5vw, 22px);
+      transition: none;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <canvas id="overlay2d"></canvas>
+  <div id="vignette"></div>
+
+  <!-- Start Screen -->
+  <div id="start-screen">
+    <svg viewBox="0 0 600 160" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="3.5" result="blur"/>
+          <feMerge>
+            <feMergeNode in="blur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+        <!-- Corner brackets top-left -->
+      </defs>
+      <!-- Option A: Title -->
+      <text id="svg-title" x="300" y="110" text-anchor="middle"
+        font-family="Georgia, serif"
+        font-size="62"
+        fill="#1A3A5C"
+        letter-spacing="10"
+        filter="url(#glow)"
+        style="animation: titlePulse 3.2s ease-in-out infinite">
+        SEAL OF OFFICE
+      </text>
+      <!-- Option B: Imperial Eagle below title -->
+      <g transform="translate(300, 145)" opacity="0.65" stroke="#1A3A5C" fill="none" stroke-width="1.5">
+        <!-- Body ellipse -->
+        <ellipse cx="0" cy="0" rx="14" ry="10"/>
+        <!-- Crown -->
+        <polygon points="0,-14 -5,-8 0,-10 5,-8" fill="#1A3A5C" stroke="none"/>
+        <!-- Wings -->
+        <path d="M-14,0 Q-28,-12 -36,2 Q-28,-2 -14,4"/>
+        <path d="M14,0 Q28,-12 36,2 Q28,-2 14,4"/>
+      </g>
+      <!-- Option C: Corner brackets (static) -->
+      <line x1="8" y1="8" x2="36" y2="8" stroke="#1A3A5C" stroke-width="1.5"/>
+      <line x1="8" y1="8" x2="8" y2="36" stroke="#1A3A5C" stroke-width="1.5"/>
+      <line x1="592" y1="8" x2="564" y2="8" stroke="#1A3A5C" stroke-width="1.5"/>
+      <line x1="592" y1="8" x2="592" y2="36" stroke="#1A3A5C" stroke-width="1.5"/>
+      <line x1="8" y1="152" x2="36" y2="152" stroke="#1A3A5C" stroke-width="1.5"/>
+      <line x1="8" y1="152" x2="8" y2="124" stroke="#1A3A5C" stroke-width="1.5"/>
+      <line x1="592" y1="152" x2="564" y2="152" stroke="#1A3A5C" stroke-width="1.5"/>
+      <line x1="592" y1="152" x2="592" y2="124" stroke="#1A3A5C" stroke-width="1.5"/>
+    </svg>
+    <p id="start-tagline">Stamp documents for an empire that's already falling — and you're the only one who knows it.</p>
+    <p id="start-tap">TAP TO BEGIN</p>
+  </div>
+
+  <!-- Instructions Screen -->
+  <div id="instructions-screen">
+    <div id="instructions-inner">
+      <h2>Imperial Orders</h2>
+      <p>MOVE to position stamp</p>
+      <p>TAP to stamp documents</p>
+      <p>DOUBLE-TAP forgeries to REJECT them</p>
+      <p style="margin-top:8px; color: #1A3A5C; font-size: clamp(13px, 1.8vw, 15px);">Valid docs: eagle faces RIGHT. Forgeries: eagle faces LEFT (0.8s only)</p>
+      <p style="margin-top:8px; color: #1A3A5C; font-size: clamp(13px, 1.8vw, 15px);">3 crumbled docs = game over. Stamp 10/12 correct to advance.</p>
+      <p class="warn">NEVER stamp a forgery as valid — TRAITOR</p>
+      <p id="instructions-tap">TAP TO PLAY</p>
+    </div>
+  </div>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div id="hud-score">0</div>
+    <div id="hud-combo"></div>
+    <div id="hud-right">
+      <div id="hud-level">Level 1</div>
+      <div id="hud-lives">♦♦♦</div>
+    </div>
+  </div>
+
+  <!-- Gameover Screen -->
+  <div id="gameover-screen">
+    <div id="gameover-inner">
+      <h2>EMPIRE FALLEN</h2>
+      <div class="score-display">Score: <span id="go-score">0</span></div>
+      <div class="high-score">Best: <span id="go-highscore">0</span></div>
+      <p id="gameover-tap">TAP TO RESTART</p>
+    </div>
+  </div>
+
+  <!-- Level Complete Screen -->
+  <div id="levelcomplete-screen">
+    <div id="levelcomplete-inner">
+      <h2>LEVEL SEALED</h2>
+      <div class="lc-score">Score: <span id="lc-score">0</span></div>
+      <p id="levelcomplete-tap">TAP TO CONTINUE</p>
+    </div>
+  </div>
+
+  <!-- Traitor Banner -->
+  <div id="traitor-banner">TRAITOR</div>
+
+  <!-- Floating Score -->
+  <div id="float-score"></div>
+
+  <!-- GitHub Link -->
+  <a id="github-link" href="https://github.com/nishivector/seal-of-office" target="_blank">GitHub ↗</a>
+
+  <div id="ui"></div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
