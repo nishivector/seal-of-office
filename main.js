@@ -1129,3 +1129,6 @@ if (svgTitle) {
 }
 
 requestAnimationFrame(animate);
+
+// Debug export
+window._gameDebug = () => ({ docsSpawned, docCount: documents.length, aliveCount: documents.filter(d=>d.alive).length, nextDocIn: Math.round(nextDocTime - performance.now()) });
