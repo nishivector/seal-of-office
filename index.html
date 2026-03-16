@@ -192,31 +192,31 @@
       touch-action: none;
     }
     #gameover-screen.visible { display: flex; }
-    #gameover-inner {
+    #go-inner {
       background: #F2E8D5;
       border: 3px solid #8B1A1A;
       padding: clamp(20px, 4vw, 48px);
       text-align: center;
       max-width: min(90vw, 500px);
     }
-    #gameover-inner h2 {
+    #go-inner h2 {
       color: #8B1A1A;
       font-size: clamp(20px, 4vw, 36px);
       letter-spacing: 0.2em;
       text-transform: uppercase;
       margin-bottom: 16px;
     }
-    #gameover-inner .score-display {
+    #go-inner .score-display {
       color: #1A3A5C;
       font-size: clamp(16px, 3vw, 28px);
       margin-bottom: 8px;
     }
-    #gameover-inner .high-score {
+    #go-inner .high-score {
       color: #D64E2A;
       font-size: clamp(14px, 2.5vw, 20px);
       margin-bottom: 20px;
     }
-    #gameover-tap {
+    #go-tap {
       color: #1A3A5C;
       font-size: clamp(14px, 2vw, 18px);
       letter-spacing: 0.2em;
@@ -390,11 +390,11 @@
 
   <!-- Gameover Screen -->
   <div id="gameover-screen">
-    <div id="gameover-inner">
+    <div id="go-inner">
       <h2>EMPIRE FALLEN</h2>
       <div class="score-display">Score: <span id="go-score">0</span></div>
       <div class="high-score">Best: <span id="go-highscore">0</span></div>
-      <p id="gameover-tap">TAP TO RESTART</p>
+      <p id="go-tap">TAP TO RESTART</p>
     </div>
   </div>
 
