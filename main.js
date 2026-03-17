@@ -1016,7 +1016,13 @@ function updateGameScene(now, dt) {
       }
     }
 
-    if (!doc.stamped) {
+    if (doc.stamped) {
+      // Slide stamped docs off to the right quickly
+      if (!doc._exitVx) { doc._exitVx = Math.max(doc.vx, 0) + 400; doc._exitVy = doc.vy * 0.5; }
+      doc.x += doc._exitVx * dt;
+      doc.y += doc._exitVy * dt;
+      doc.mesh.position.set(doc.x, doc.y, doc.mesh.position.z);
+    } else {
       doc.x += doc.vx * dt;
       doc.y += doc.vy * dt;
       doc.mesh.position.set(doc.x, doc.y, doc.mesh.position.z);
