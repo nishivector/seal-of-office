@@ -14,11 +14,11 @@ const DOUBLE_TAP_MS = 200;
 
 // Level configs
 const LEVELS = [
-  { id:1, name:'Morning Pile',    minDocs:1, maxDocs:2, entryInterval:3200, minSpd:40, maxSpd:56, forgeries:0, totalDocs:12, depth:2 },
-  { id:2, name:'Afternoon Rush',  minDocs:2, maxDocs:3, entryInterval:2600, minSpd:56, maxSpd:72, forgeries:0, totalDocs:14, depth:3 },
-  { id:3, name:'Evening Chaos',   minDocs:3, maxDocs:4, entryInterval:2000, minSpd:64, maxSpd:88, forgeries:1, totalDocs:15, depth:4 },
-  { id:4, name:'The Forgery',     minDocs:4, maxDocs:5, entryInterval:1800, minSpd:72, maxSpd:96, forgeries:2, totalDocs:16, depth:4 },
-  { id:5, name:'The Coup',        minDocs:5, maxDocs:6, entryInterval:1400, minSpd:88, maxSpd:110, forgeries:3, totalDocs:18, depth:5 },
+  { id:1, name:'Morning Pile',    minDocs:1, maxDocs:2, entryInterval:2200, minSpd:48, maxSpd:62, forgeries:1, totalDocs:8,  depth:2 },
+  { id:2, name:'Afternoon Rush',  minDocs:2, maxDocs:3, entryInterval:1900, minSpd:60, maxSpd:76, forgeries:2, totalDocs:10, depth:3 },
+  { id:3, name:'Evening Chaos',   minDocs:3, maxDocs:4, entryInterval:1600, minSpd:68, maxSpd:90, forgeries:2, totalDocs:12, depth:4 },
+  { id:4, name:'The Forgery',     minDocs:4, maxDocs:5, entryInterval:1400, minSpd:76, maxSpd:100, forgeries:3, totalDocs:14, depth:4 },
+  { id:5, name:'The Coup',        minDocs:5, maxDocs:6, entryInterval:1100, minSpd:92, maxSpd:116, forgeries:4, totalDocs:16, depth:5 },
 ];
 
 // ─── Three.js Setup ──────────────────────────────────────────────────────────
